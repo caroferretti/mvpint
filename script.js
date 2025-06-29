@@ -1,4 +1,4 @@
-// ✅ SCRIPT COMPLETO PARA MVP INTEROMED
+// ✅ SCRIPT COMPLETO PARA MVP INTEROMED LISTO PARA PEGAR
 
 const campos = {
   nombreApellido: document.getElementById("nombreApellido"),
@@ -25,6 +25,21 @@ const mensajeIA = document.getElementById("mensajeIA");
 
 const OPENAI_API_KEY = "TU_API_KEY_AQUI";
 
+function capitalizar(texto) {
+  return texto.replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function calcularEdad() {
+  const fecha = campos.fechaNacimiento.value;
+  if (!fecha) return;
+  const hoy = new Date();
+  const nacimiento = new Date(fecha);
+  let edad = hoy.getFullYear() - nacimiento.getFullYear();
+  const m = hoy.getMonth() - nacimiento.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) edad--;
+  campos.edad.value = edad;
+}
+
 function actualizarBotonDescarga() {
   btnDescargar.disabled = !(confirmarDiagnostico.checked && confirmarPlan.checked);
 }
@@ -50,10 +65,10 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
 
   recognition.onresult = (event) => {
     const texto = event.results[event.resultIndex][0].transcript.toLowerCase();
-    if (texto.includes("tengo")) campos.sintomas.value += texto + ", ";
-    else if (texto.includes("tuve")) campos.preexistentes.value += texto + ", ";
-    else if (texto.includes("mi mamá") || texto.includes("mi papá") || texto.includes("mi hermana") || texto.includes("mi hermano")) campos.familiares.value += texto + ", ";
-    else if (texto.includes("motivo de consulta")) campos.motivoConsulta.value += texto + ", ";
+    if (texto.includes("tengo")) campos.sintomas.value += capitalizar(texto) + ". ";
+    else if (texto.includes("tuve")) campos.preexistentes.value += capitalizar(texto) + ". ";
+    else if (texto.includes("mi mamá") || texto.includes("mi papá") || texto.includes("mi hermana") || texto.includes("mi hermano")) campos.familiares.value += capitalizar(texto) + ". ";
+    else if (texto.includes("motivo de consulta")) campos.motivoConsulta.value += capitalizar(texto) + ". ";
   };
 } else {
   alert("Tu navegador no soporta reconocimiento de voz");
@@ -99,14 +114,19 @@ btnDescargar.addEventListener("click", () => {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   let y = 10;
+  doc.setFontSize(14);
   doc.text("Historia Clínica - Interrogatorio por Voz", 10, y);
   y += 10;
   for (const key in campos) {
     const label = key;
     const valor = campos[key].value;
+    doc.setFontSize(12);
     doc.text(`${label}: ${valor}`, 10, y);
     y += 7;
+    if (y > 280) {
+      doc.addPage();
+      y = 10;
+    }
   }
   doc.save("historia_clinica_interomed.pdf");
 });
-
