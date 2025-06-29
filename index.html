@@ -5,23 +5,24 @@
   <title>Interrogatorio por Voz - InterOMed</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: 30px; }
-    input, textarea { width: 100%; margin-bottom: 10px; padding: 5px; }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    input, textarea { width: 100%; margin-bottom: 8px; padding: 6px; }
     label { font-weight: bold; }
-    button { margin: 5px; padding: 10px 15px; }
-    .button-container { margin-bottom: 20px; }
+    button { margin: 4px; padding: 8px 12px; }
+    #botones { margin-bottom: 10px; }
+    #resultado, #mensajeIA { background: #f5f5f5; padding: 8px; margin-top: 10px; }
   </style>
 </head>
 <body>
-  <h1>Interrogatorio por Voz - InterOMed</h1>
+  <h2>Interrogatorio por Voz - InterOMed</h2>
 
-  <div class="button-container">
+  <div id="botones">
     <button id="hablar">Iniciar Grabación</button>
     <button id="pausar" disabled>Pausar</button>
     <button id="reanudar" disabled>Reanudar</button>
     <button id="detener" disabled>Finalizar</button>
-    <button id="descargar" disabled>Descargar PDF</button>
-    <button id="diagnosticar">Diagnosticar con IA</button>
+    <button id="descargar">Descargar PDF</button>
+    <button id="diagnosticar">Diagnóstico con IA</button>
   </div>
 
   <label>Nombre y Apellido:</label>
@@ -56,16 +57,16 @@
 
   <label>Diagnóstico Presuntivo:</label>
   <textarea id="diagnostico"></textarea>
-  <input type="checkbox" id="confirmarDiagnostico" /> Confirmar diagnóstico por médico
+  <input type="checkbox" id="checkDiagnostico" /> Confirmar diagnóstico
 
   <label>Plan Terapéutico:</label>
   <textarea id="plan"></textarea>
-  <input type="checkbox" id="confirmarPlan" /> Confirmar plan por médico
+  <input type="checkbox" id="checkPlan" /> Confirmar plan
 
-  <div id="resultado" style="margin-top: 20px; background: #f0f0f0; padding: 10px;"></div>
-
-  <div id="mensajeIA" style="margin-top: 10px; font-style: italic;"></div>
+  <div id="resultado"></div>
+  <div id="mensajeIA"></div>
 
   <script src="script.js"></script>
 </body>
 </html>
+
