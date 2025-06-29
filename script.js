@@ -1,4 +1,10 @@
-// ✅ SCRIPT COMPLETO PARA MVP INTEROMED LISTO PARA PEGAR
+// ✅ SCRIPT FRONTEND PARA MVP INTEROMED CON CLAVE OPENAI OCULTA DE FORMA SEGURA
+
+// Este script:
+// - Llama al endpoint /api/diagnostico que maneja la clave en backend.
+// - No expone la clave en el frontend.
+// - Requiere que configures en Vercel la variable de entorno OPENAI_API_KEY.
+// - Preparado para subir a GitHub y Vercel de forma segura.
 
 const campos = {
   nombreApellido: document.getElementById("nombreApellido"),
@@ -22,8 +28,6 @@ const btnDiagnosticar = document.getElementById("diagnosticar");
 const confirmarDiagnostico = document.getElementById("confirmarDiagnostico");
 const confirmarPlan = document.getElementById("confirmarPlan");
 const mensajeIA = document.getElementById("mensajeIA");
-
-const OPENAI_API_KEY = "TU_API_KEY_AQUI";
 
 function capitalizar(texto) {
   return texto.replace(/\b\w/g, c => c.toUpperCase());
@@ -82,27 +86,14 @@ btnDiagnosticar.addEventListener("click", async () => {
   }
   mensajeIA.textContent = "🔍 Analizando con IA...";
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("/api/diagnostico", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-preview",
-        messages: [{
-          role: "system",
-          content: "Eres un médico que genera diagnóstico presuntivo y plan terapéutico en español. Devuelve JSON con 'DiagnosticoPresuntivo' y 'PlanTerapeutico'."
-        }, {
-          role: "user",
-          content: `Paciente presenta: ${sintomas}`
-        }]
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sintomas })
     });
     const data = await response.json();
-    const jsonIA = JSON.parse(data.choices[0].message.content);
-    campos.diagnostico.value = jsonIA.DiagnosticoPresuntivo;
-    campos.plan.value = jsonIA.PlanTerapeutico;
+    campos.diagnostico.value = data.diagnostico;
+    campos.plan.value = data.plan;
     mensajeIA.textContent = "✅ Diagnóstico y plan generados (requiere validación médica).";
   } catch (error) {
     console.error(error);
@@ -130,3 +121,4 @@ btnDescargar.addEventListener("click", () => {
   }
   doc.save("historia_clinica_interomed.pdf");
 });
+
