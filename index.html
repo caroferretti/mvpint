@@ -2,29 +2,27 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Interrogatorio por Voz</title>
+  <title>Interrogatorio por Voz - InterOMed</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 30px;
-    }
-    input, textarea {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 5px;
-    }
-    label {
-      font-weight: bold;
-    }
-    button {
-      margin: 5px;
-      padding: 10px 15px;
-    }
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    input, textarea { width: 100%; margin-bottom: 10px; padding: 5px; }
+    label { font-weight: bold; }
+    button { margin: 5px; padding: 10px 15px; }
+    .button-container { margin-bottom: 20px; }
   </style>
 </head>
 <body>
-  <h1>Interrogatorio por Voz</h1>
+  <h1>Interrogatorio por Voz - InterOMed</h1>
+
+  <div class="button-container">
+    <button id="hablar">Iniciar Grabación</button>
+    <button id="pausar" disabled>Pausar</button>
+    <button id="reanudar" disabled>Reanudar</button>
+    <button id="detener" disabled>Finalizar</button>
+    <button id="descargar" disabled>Descargar PDF</button>
+    <button id="diagnosticar">Diagnosticar con IA</button>
+  </div>
 
   <label>Nombre y Apellido:</label>
   <input id="nombreApellido" type="text" />
@@ -58,22 +56,13 @@
 
   <label>Diagnóstico Presuntivo:</label>
   <textarea id="diagnostico"></textarea>
-  <input type="checkbox" id="checkDiagnostico" /> Confirmar diagnóstico
+  <input type="checkbox" id="confirmarDiagnostico" /> Confirmar diagnóstico por médico
 
   <label>Plan Terapéutico:</label>
   <textarea id="plan"></textarea>
-  <input type="checkbox" id="checkPlan" /> Confirmar plan
+  <input type="checkbox" id="confirmarPlan" /> Confirmar plan por médico
 
   <div id="resultado" style="margin-top: 20px; background: #f0f0f0; padding: 10px;"></div>
-
-  <div>
-    <button id="hablar">Iniciar Grabación</button>
-    <button id="pausar" disabled>Pausar</button>
-    <button id="reanudar" disabled>Reanudar</button>
-    <button id="detener" disabled>Finalizar</button>
-    <button id="descargar">Descargar PDF</button>
-    <button id="diagnosticar">Diagnosticar con IA</button>
-  </div>
 
   <div id="mensajeIA" style="margin-top: 10px; font-style: italic;"></div>
 
