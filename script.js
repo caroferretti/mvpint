@@ -20,13 +20,12 @@ const btnGuardar = document.getElementById("guardar");
 const resultadoDiv = document.getElementById("resultado");
 const mensajeIA = document.getElementById("mensajeIA");
 const mensajeGuardado = document.getElementById("mensajeGuardado");
-const inputAudio = document.getElementById("inputAudio");
 
 let recognition;
 let grabando = false;
 let textoAcumulado = "";
 
-// ========== GRABACIÓN EN VIVO CON SPEECH RECOGNITION ==========
+// Reconocimiento de voz
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
@@ -71,73 +70,39 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     alert("Tu navegador no soporta reconocimiento de voz.");
 }
 
-// ========== SUBIR AUDIO PARA WHISPER ==========
-inputAudio.addEventListener("change", async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("audio", file);
-
-    mensajeIA.textContent = "Procesando audio con Whisper...";
-
-    try {
-        const response = await fetch("/api/whisper", {
-            method: "POST",
-            body: formData
-        });
-        const data = await response.json();
-
-        if (data.texto) {
-            textoAcumulado = data.texto;
-            resultadoDiv.textContent = data.texto;
-            mensajeIA.textContent = "✅ Audio transcripto correctamente.";
-
-            diagnosticarDesdeTexto(data.texto);
-        } else {
-            console.error(data.error);
-            mensajeIA.textContent = "❌ Error en la transcripción con Whisper.";
-        }
-    } catch (error) {
-        console.error(error);
-        mensajeIA.textContent = "❌ Error al procesar el audio con Whisper.";
-    }
-});
-
-// ========== DIAGNOSTICAR MANUAL O AUTOMÁTICO ==========
+// Diagnóstico con IA
 btnDiagnosticar.addEventListener("click", async () => {
     const texto = resultadoDiv.textContent.trim();
     if (!texto) {
-        mensajeIA.textContent = "Por favor, grabe o cargue datos antes de diagnosticar.";
+        mensajeIA.textContent = "Por favor, grabe o escriba datos antes de diagnosticar.";
         return;
     }
-    diagnosticarDesdeTexto(texto);
-});
-
-async function diagnosticarDesdeTexto(texto) {
-    mensajeIA.textContent = "Consultando IA para estructuración...";
+    mensajeIA.textContent = "Consultando IA...";
 
     try {
         const response = await fetch("/api/openai", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ texto })
+            body: JSON.stringify({ texto: texto }) // ✅ CAMBIO: se envía { texto } y NO { prompt }
         });
-        const data = await response.json();
 
+        const data = await response.json();
         if (data.resultado) {
-            parsearRespuestaIA(JSON.stringify(data.resultado));
-            mensajeIA.textContent = "✅ IA completó campos sugeridos (requiere validación profesional).";
+            parsearRespuestaIA(data.resultado);
+            mensajeIA.textContent = "✅ IA completó campos sugeridos (verificar antes de guardar).";
+        } else if (data.raw) {
+            mensajeIA.textContent = "⚠️ Error de formato en la respuesta de la IA.";
+            console.log(data.raw);
         } else {
-            mensajeIA.textContent = "❌ No se recibió respuesta de la IA.";
+            mensajeIA.textContent = "⚠️ No se recibió respuesta de la IA.";
         }
     } catch (error) {
         console.error(error);
         mensajeIA.textContent = "❌ Error al consultar la IA.";
     }
-}
+});
 
-// ========== GUARDAR EN FIRESTORE ==========
+// Guardar en HC
 btnGuardar.addEventListener("click", async () => {
     const fechaConsulta = new Date().toISOString();
     const datos = {
@@ -168,7 +133,7 @@ btnGuardar.addEventListener("click", async () => {
     }
 });
 
-// ========== PROCESAR FRASES EN VIVO ==========
+// Procesar frases directas en tiempo real durante grabación
 function procesarTranscripcion(frase) {
     const mapeoSintomas = {
         "me duele la panza": "dolor abdominal",
@@ -194,16 +159,26 @@ function procesarTranscripcion(frase) {
     }
 }
 
-// ========== PARSEAR RESPUESTA DE OPENAI ==========
+// Parsear la respuesta de la IA y llenar campos automáticamente
 function parsearRespuestaIA(respuesta) {
     try {
-        const json = JSON.parse(respuesta);
-        for (const campo in campos) {
-            if (json[campo] !== undefined) {
-                campos[campo].value = json[campo];
-            }
-        }
+        const camposIA = respuesta;
+
+        if (camposIA["Nombre y Apellido"]) campos.nombreApellido.value = camposIA["Nombre y Apellido"];
+        if (camposIA["Fecha de Nacimiento"]) campos.fechaNacimiento.value = camposIA["Fecha de Nacimiento"];
+        if (camposIA["Edad"]) campos.edad.value = camposIA["Edad"];
+        if (camposIA["Género"]) campos.genero.value = camposIA["Género"];
+        if (camposIA["Cobertura"]) campos.cobertura.value = camposIA["Cobertura"];
+        if (camposIA["Alergias"]) campos.alergias.value = camposIA["Alergias"];
+        if (camposIA["Enfermedades Familiares"]) campos.familiares.value = camposIA["Enfermedades Familiares"];
+        if (camposIA["Enfermedades Preexistentes"]) campos.preexistentes.value = camposIA["Enfermedades Preexistentes"];
+        if (camposIA["Síntomas"]) campos.sintomas.value = camposIA["Síntomas"];
+        if (camposIA["Motivo de Consulta"]) campos.motivoConsulta.value = camposIA["Motivo de Consulta"];
+        if (camposIA["Diagnóstico Presuntivo"]) campos.diagnostico.value = camposIA["Diagnóstico Presuntivo"];
+        if (camposIA["Plan Terapéutico"]) campos.plan.value = camposIA["Plan Terapéutico"];
+
     } catch (e) {
-        console.error("Error al parsear respuesta de IA:", e);
+        console.error("Error al parsear respuesta IA:", e);
+        mensajeIA.textContent = "❌ Error al parsear la respuesta de la IA.";
     }
 }
