@@ -8,10 +8,12 @@
         input, textarea, button { display: block; margin: 10px 0; width: 100%; }
         button { padding: 10px; }
         #resultado, #mensajeIA, #mensajeGuardado { background: #f0f0f0; padding: 10px; min-height: 50px; margin-top: 10px; }
+        label { margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
     <h1>InterOMed - Historia Clínica por Voz</h1>
+
     <input id="nombreApellido" placeholder="Nombre y Apellido">
     <input id="fechaNacimiento" placeholder="Fecha de Nacimiento">
     <input id="edad" placeholder="Edad">
@@ -24,13 +26,21 @@
     <input id="motivoConsulta" placeholder="Motivo de Consulta">
     <input id="diagnostico" placeholder="Diagnóstico Presuntivo">
     <textarea id="plan" placeholder="Plan Terapéutico"></textarea>
+
     <button id="hablar">🎤 Iniciar Grabación</button>
     <button id="detener" disabled>⏹️ Detener Grabación</button>
     <button id="diagnosticar">🤖 Diagnosticar con IA</button>
+
+    <!-- ✅ Botón adicional para Whisper -->
+    <label for="inputAudio">📤 O subir audio para transcripción con Whisper:</label>
+    <input type="file" id="inputAudio" accept="audio/*">
+
     <button id="guardar">💾 Guardar en HC</button>
+
     <div id="resultado"></div>
     <div id="mensajeIA"></div>
     <div id="mensajeGuardado"></div>
+
     <script src="script.js"></script>
 </body>
 </html>
