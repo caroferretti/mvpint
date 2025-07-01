@@ -1,4 +1,4 @@
-`const campos = {
+const campos = {
     nombreApellido: document.getElementById("nombreApellido"),
     fechaNacimiento: document.getElementById("fechaNacimiento"),
     edad: document.getElementById("edad"),
@@ -20,11 +20,13 @@ const btnGuardar = document.getElementById("guardar");
 const resultadoDiv = document.getElementById("resultado");
 const mensajeIA = document.getElementById("mensajeIA");
 const mensajeGuardado = document.getElementById("mensajeGuardado");
+const inputAudio = document.getElementById("inputAudio");
 
 let recognition;
 let grabando = false;
 let textoAcumulado = "";
 
+// ========== GRABACIÓN EN VIVO CON SPEECH RECOGNITION ==========
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
@@ -69,32 +71,73 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     alert("Tu navegador no soporta reconocimiento de voz.");
 }
 
+// ========== SUBIR AUDIO PARA WHISPER ==========
+inputAudio.addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("audio", file);
+
+    mensajeIA.textContent = "Procesando audio con Whisper...";
+
+    try {
+        const response = await fetch("/api/whisper", {
+            method: "POST",
+            body: formData
+        });
+        const data = await response.json();
+
+        if (data.texto) {
+            textoAcumulado = data.texto;
+            resultadoDiv.textContent = data.texto;
+            mensajeIA.textContent = "✅ Audio transcripto correctamente.";
+
+            diagnosticarDesdeTexto(data.texto);
+        } else {
+            console.error(data.error);
+            mensajeIA.textContent = "❌ Error en la transcripción con Whisper.";
+        }
+    } catch (error) {
+        console.error(error);
+        mensajeIA.textContent = "❌ Error al procesar el audio con Whisper.";
+    }
+});
+
+// ========== DIAGNOSTICAR MANUAL O AUTOMÁTICO ==========
 btnDiagnosticar.addEventListener("click", async () => {
     const texto = resultadoDiv.textContent.trim();
     if (!texto) {
-        mensajeIA.textContent = "Por favor, grabe o escriba datos antes de diagnosticar.";
+        mensajeIA.textContent = "Por favor, grabe o cargue datos antes de diagnosticar.";
         return;
     }
-    mensajeIA.textContent = "Consultando IA...";
+    diagnosticarDesdeTexto(texto);
+});
+
+async function diagnosticarDesdeTexto(texto) {
+    mensajeIA.textContent = "Consultando IA para estructuración...";
+
     try {
         const response = await fetch("/api/openai", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: texto })
+            body: JSON.stringify({ texto })
         });
         const data = await response.json();
+
         if (data.resultado) {
-            parsearRespuestaIA(data.resultado);
-            mensajeIA.textContent = "IA completó campos sugeridos (requiere validación profesional).";
+            parsearRespuestaIA(JSON.stringify(data.resultado));
+            mensajeIA.textContent = "✅ IA completó campos sugeridos (requiere validación profesional).";
         } else {
-            mensajeIA.textContent = "No se recibió respuesta de la IA.";
+            mensajeIA.textContent = "❌ No se recibió respuesta de la IA.";
         }
     } catch (error) {
         console.error(error);
-        mensajeIA.textContent = "Error al consultar la IA.";
+        mensajeIA.textContent = "❌ Error al consultar la IA.";
     }
-});
+}
 
+// ========== GUARDAR EN FIRESTORE ==========
 btnGuardar.addEventListener("click", async () => {
     const fechaConsulta = new Date().toISOString();
     const datos = {
@@ -125,6 +168,7 @@ btnGuardar.addEventListener("click", async () => {
     }
 });
 
+// ========== PROCESAR FRASES EN VIVO ==========
 function procesarTranscripcion(frase) {
     const mapeoSintomas = {
         "me duele la panza": "dolor abdominal",
@@ -150,29 +194,16 @@ function procesarTranscripcion(frase) {
     }
 }
 
+// ========== PARSEAR RESPUESTA DE OPENAI ==========
 function parsearRespuestaIA(respuesta) {
-    const patrones = {
-        nombreApellido: /Nombre:\s*(.*)/i,
-        genero: /Género:\s*(.*)/i,
-        cobertura: /Cobertura:\s*(.*)/i,
-        alergias: /Alergias:\s*(.*)/i,
-        familiares: /Familiares:\s*(.*)/i,
-        preexistentes: /Preexistentes:\s*(.*)/i,
-        sintomas: /Síntomas:\s*(.*)/i,
-        motivoConsulta: /Motivo:\s*(.*)/i,
-        diagnostico: /Diagnóstico:\s*(.*)/i,
-        plan: /Plan:\s*(.*)/i
-    };
-    for (const campo in patrones) {
-        const match = respuesta.match(patrones[campo]);
-        if (match && match[1]) {
-            campos[campo].value = match[1].trim();
+    try {
+        const json = JSON.parse(respuesta);
+        for (const campo in campos) {
+            if (json[campo] !== undefined) {
+                campos[campo].value = json[campo];
+            }
         }
+    } catch (e) {
+        console.error("Error al parsear respuesta de IA:", e);
     }
-}`;
-
-// ✅ Con esto tienes el `index.html` y `script.js` listos con:
-// - Grabación ilimitada y carga estructurada.
-// - Integración con IA para sugerencias.
-// - Fecha de consulta automática.
-// - Mensaje de confirmación de guardado.
+}
