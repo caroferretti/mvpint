@@ -1,6 +1,3 @@
-// Voice AI InterOMed MVP - script.js con integración OpenAI lista
-// Utiliza Vercel y tu endpoint /api/openai de forma segura
-
 const campos = {
     nombreApellido: document.getElementById("nombreApellido"),
     fechaNacimiento: document.getElementById("fechaNacimiento"),
@@ -24,21 +21,24 @@ const mensajeIA = document.getElementById("mensajeIA");
 
 let recognition;
 let grabando = false;
+let textoAcumulado = "";
 
-// --- CONFIGURAR RECONOCIMIENTO DE VOZ ---
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
     recognition.lang = 'es-AR';
     recognition.continuous = true;
-    recognition.interimResults = true;
+    recognition.interimResults = false;
 
     recognition.onresult = (event) => {
         let texto = "";
         for (let i = event.resultIndex; i < event.results.length; ++i) {
             texto += event.results[i][0].transcript + " ";
         }
-        resultadoDiv.textContent = texto.trim();
+        textoAcumulado += texto.trim() + ". ";
+        resultadoDiv.textContent = textoAcumulado.trim();
+
+        procesarTranscripcion(texto.toLowerCase().trim());
     };
 
     recognition.onerror = (event) => {
@@ -69,7 +69,6 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     alert("Tu navegador no soporta reconocimiento de voz.");
 }
 
-// --- BOTÓN DIAGNOSTICAR CON IA ---
 btnDiagnosticar.addEventListener("click", async () => {
     const texto = resultadoDiv.textContent.trim();
     if (!texto) {
@@ -98,7 +97,34 @@ btnDiagnosticar.addEventListener("click", async () => {
     }
 });
 
-// --- FUNCION PARA PARSEAR RESPUESTA IA Y COMPLETAR CAMPOS ---
+function procesarTranscripcion(frase) {
+    const mapeoSintomas = {
+        "me duele la panza": "dolor abdominal",
+        "me duele mucho la panza": "dolor abdominal",
+        "me duele la cabeza": "cefalea",
+        "tengo fiebre": "fiebre",
+        "me siento mareada": "vértigo",
+        "tengo dolor de garganta": "odinofagia"
+    };
+
+    if (mapeoSintomas[frase]) {
+        campos.sintomas.value = mapeoSintomas[frase];
+        return;
+    }
+
+    if (frase.startsWith("alérgica a ") || frase.startsWith("alergico a ")) {
+        const alergeno = frase.replace("alérgica a ", "").replace("alergico a ", "").trim();
+        campos.alergias.value = alergeno;
+        return;
+    }
+
+    if (frase.startsWith("motivo de consulta ")) {
+        const motivo = frase.replace("motivo de consulta ", "").trim();
+        campos.motivoConsulta.value = motivo;
+        return;
+    }
+}
+
 function parsearRespuestaIA(respuesta) {
     const patrones = {
         nombreApellido: /Nombre:\s*(.*)/i,
@@ -120,3 +146,5 @@ function parsearRespuestaIA(respuesta) {
         }
     }
 }
+```
+
