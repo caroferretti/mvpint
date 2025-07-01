@@ -1,72 +1,36 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Interrogatorio por Voz - InterOMed</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    input, textarea { width: 100%; margin-bottom: 8px; padding: 6px; }
-    label { font-weight: bold; }
-    button { margin: 4px; padding: 8px 12px; }
-    #botones { margin-bottom: 10px; }
-    #resultado, #mensajeIA { background: #f5f5f5; padding: 8px; margin-top: 10px; }
-  </style>
+    <meta charset="UTF-8">
+    <title>InterOMed - Historia Clínica por Voz</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input, textarea, button { display: block; margin: 10px 0; width: 100%; }
+        button { padding: 10px; }
+        #resultado, #mensajeIA, #mensajeGuardado { background: #f0f0f0; padding: 10px; min-height: 50px; margin-top: 10px; }
+    </style>
 </head>
 <body>
-  <h2>Interrogatorio por Voz - InterOMed</h2>
-
-  <div id="botones">
-    <button id="hablar">Iniciar Grabación</button>
-    <button id="pausar" disabled>Pausar</button>
-    <button id="reanudar" disabled>Reanudar</button>
-    <button id="detener" disabled>Finalizar</button>
-    <button id="descargar">Descargar PDF</button>
-    <button id="diagnosticar">Diagnóstico con IA</button>
-  </div>
-
-  <label>Nombre y Apellido:</label>
-  <input id="nombreApellido" type="text" />
-
-  <label>Fecha de Nacimiento:</label>
-  <input id="fechaNacimiento" type="date" onchange="calcularEdad()" />
-
-  <label>Edad:</label>
-  <input id="edad" type="text" />
-
-  <label>Género:</label>
-  <input id="genero" type="text" />
-
-  <label>Cobertura:</label>
-  <input id="cobertura" type="text" />
-
-  <label>Alergias:</label>
-  <textarea id="alergias"></textarea>
-
-  <label>Enfermedades Familiares:</label>
-  <textarea id="familiares"></textarea>
-
-  <label>Enfermedades Preexistentes:</label>
-  <textarea id="preexistentes"></textarea>
-
-  <label>Síntomas:</label>
-  <textarea id="sintomas"></textarea>
-
-  <label>Motivo de Consulta:</label>
-  <textarea id="motivoConsulta"></textarea>
-
-  <label>Diagnóstico Presuntivo:</label>
-  <textarea id="diagnostico"></textarea>
-  <input type="checkbox" id="checkDiagnostico" /> Confirmar diagnóstico
-
-  <label>Plan Terapéutico:</label>
-  <textarea id="plan"></textarea>
-  <input type="checkbox" id="checkPlan" /> Confirmar plan
-
-  <div id="resultado"></div>
-  <div id="mensajeIA"></div>
-
-  <script src="script.js"></script>
+    <h1>InterOMed - Historia Clínica por Voz</h1>
+    <input id="nombreApellido" placeholder="Nombre y Apellido">
+    <input id="fechaNacimiento" placeholder="Fecha de Nacimiento">
+    <input id="edad" placeholder="Edad">
+    <input id="genero" placeholder="Género">
+    <input id="cobertura" placeholder="Cobertura">
+    <input id="alergias" placeholder="Alergias">
+    <input id="familiares" placeholder="Antecedentes Familiares">
+    <input id="preexistentes" placeholder="Antecedentes Personales">
+    <input id="sintomas" placeholder="Síntomas">
+    <input id="motivoConsulta" placeholder="Motivo de Consulta">
+    <input id="diagnostico" placeholder="Diagnóstico Presuntivo">
+    <textarea id="plan" placeholder="Plan Terapéutico"></textarea>
+    <button id="hablar">🎤 Iniciar Grabación</button>
+    <button id="detener" disabled>⏹️ Detener Grabación</button>
+    <button id="diagnosticar">🤖 Diagnosticar con IA</button>
+    <button id="guardar">💾 Guardar en HC</button>
+    <div id="resultado"></div>
+    <div id="mensajeIA"></div>
+    <div id="mensajeGuardado"></div>
+    <script src="script.js"></script>
 </body>
 </html>
-
