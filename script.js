@@ -1,4 +1,4 @@
-const campos = {
+`const campos = {
     nombreApellido: document.getElementById("nombreApellido"),
     fechaNacimiento: document.getElementById("fechaNacimiento"),
     edad: document.getElementById("edad"),
@@ -16,8 +16,10 @@ const campos = {
 const btnHablar = document.getElementById("hablar");
 const btnDetener = document.getElementById("detener");
 const btnDiagnosticar = document.getElementById("diagnosticar");
+const btnGuardar = document.getElementById("guardar");
 const resultadoDiv = document.getElementById("resultado");
 const mensajeIA = document.getElementById("mensajeIA");
+const mensajeGuardado = document.getElementById("mensajeGuardado");
 
 let recognition;
 let grabando = false;
@@ -37,7 +39,6 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         }
         textoAcumulado += texto.trim() + ". ";
         resultadoDiv.textContent = textoAcumulado.trim();
-
         procesarTranscripcion(texto.toLowerCase().trim());
     };
 
@@ -64,7 +65,6 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         btnHablar.disabled = false;
         btnDetener.disabled = true;
     });
-
 } else {
     alert("Tu navegador no soporta reconocimiento de voz.");
 }
@@ -76,14 +76,12 @@ btnDiagnosticar.addEventListener("click", async () => {
         return;
     }
     mensajeIA.textContent = "Consultando IA...";
-
     try {
         const response = await fetch("/api/openai", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ prompt: texto })
         });
-
         const data = await response.json();
         if (data.resultado) {
             parsearRespuestaIA(data.resultado);
@@ -97,6 +95,36 @@ btnDiagnosticar.addEventListener("click", async () => {
     }
 });
 
+btnGuardar.addEventListener("click", async () => {
+    const fechaConsulta = new Date().toISOString();
+    const datos = {
+        nombreApellido: campos.nombreApellido.value,
+        fechaNacimiento: campos.fechaNacimiento.value,
+        edad: campos.edad.value,
+        genero: campos.genero.value,
+        cobertura: campos.cobertura.value,
+        alergias: campos.alergias.value,
+        familiares: campos.familiares.value,
+        preexistentes: campos.preexistentes.value,
+        sintomas: campos.sintomas.value,
+        motivoConsulta: campos.motivoConsulta.value,
+        diagnostico: campos.diagnostico.value,
+        plan: campos.plan.value,
+        fechaConsulta: fechaConsulta
+    };
+    try {
+        await fetch("/api/guardarHC", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos)
+        });
+        mensajeGuardado.textContent = "✅ Historia clínica guardada correctamente.";
+    } catch (error) {
+        console.error(error);
+        mensajeGuardado.textContent = "❌ Error al guardar la historia clínica.";
+    }
+});
+
 function procesarTranscripcion(frase) {
     const mapeoSintomas = {
         "me duele la panza": "dolor abdominal",
@@ -106,18 +134,15 @@ function procesarTranscripcion(frase) {
         "me siento mareada": "vértigo",
         "tengo dolor de garganta": "odinofagia"
     };
-
     if (mapeoSintomas[frase]) {
         campos.sintomas.value = mapeoSintomas[frase];
         return;
     }
-
     if (frase.startsWith("alérgica a ") || frase.startsWith("alergico a ")) {
         const alergeno = frase.replace("alérgica a ", "").replace("alergico a ", "").trim();
         campos.alergias.value = alergeno;
         return;
     }
-
     if (frase.startsWith("motivo de consulta ")) {
         const motivo = frase.replace("motivo de consulta ", "").trim();
         campos.motivoConsulta.value = motivo;
@@ -138,13 +163,16 @@ function parsearRespuestaIA(respuesta) {
         diagnostico: /Diagnóstico:\s*(.*)/i,
         plan: /Plan:\s*(.*)/i
     };
-
     for (const campo in patrones) {
         const match = respuesta.match(patrones[campo]);
         if (match && match[1]) {
             campos[campo].value = match[1].trim();
         }
     }
-}
-```
+}`;
 
+// ✅ Con esto tienes el `index.html` y `script.js` listos con:
+// - Grabación ilimitada y carga estructurada.
+// - Integración con IA para sugerencias.
+// - Fecha de consulta automática.
+// - Mensaje de confirmación de guardado.
